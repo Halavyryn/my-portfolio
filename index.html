@@ -439,6 +439,19 @@
 .case-block .case-block .panel {
   margin-left: 30px;
 }
+
+
+.panel {
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  overflow: hidden;
+  max-height: 0;
+  padding: 0 20px;
+}
+
+.panel.active {
+  padding: 20px;
+  max-height: 2000px;
+}
   </style>
 </head>
 

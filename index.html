@@ -722,8 +722,8 @@ Acceptance Criteria:
   </footer>
 
   <!-- Единый JS-блок -->
- <script>
-  // --- Скрипт для анимации fade-in ---
+<script>
+  // --- Анимация fade-in ---
   const fadeElements = document.querySelectorAll('.fade-in');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -734,36 +734,68 @@ Acceptance Criteria:
   }, { threshold: 0.1 });
   fadeElements.forEach(el => observer.observe(el));
 
-  // --- Основной скрипт для вложенных аккордеонов ---
+  // --- Скрипт для вложенных аккордеонов ---
   document.querySelectorAll('.accordion').forEach(button => {
     button.addEventListener('click', function (e) {
-      e.stopPropagation(); // не даём всплывать до .accordion-header
+      e.stopPropagation(); // чтобы не всплывало в .accordion-header
       this.classList.toggle('active');
+
       const panel = this.nextElementSibling;
-      panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+      if (panel.style.display === 'block') {
+        panel.style.display = 'none';
+      } else {
+        panel.style.display = 'block';
+      }
     });
   });
 
-  // --- Скрипт для заголовков групп аккордеонов ---
+  // --- Скрипт для верхнего уровня .accordion-header ---
   document.querySelectorAll('.accordion-header').forEach(header => {
     header.addEventListener('click', function (e) {
-      e.stopPropagation(); // чтобы не мешать вложенным аккордеонам
+      e.stopPropagation();
 
       const isExpanded = header.classList.contains('expanded');
-      const currentContent = header.nextElementSibling;
+      const content = header.nextElementSibling;
 
-      // Закрываем все остальные .accordion-content в корневом уровне
+      // Закрываем все верхнеуровневые блоки
       document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('expanded'));
-      document.querySelectorAll('.case-block > .accordion-content').forEach(c => c.style.display = 'none');
+      document.querySelectorAll('.accordion-header + .accordion-content').forEach(c => {
+        // ⚠️ Важно: НЕ скрываем вложенные .panel — только верхние .accordion-content
+        c.style.display = 'none';
+      });
 
-      // Если текущий не был раскрыт — раскрываем его
+      // Если текущий не раскрыт — раскрываем
       if (!isExpanded) {
         header.classList.add('expanded');
-        currentContent.style.display = 'block';
+        content.style.display = 'block';
       }
     });
   });
 </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const accordions = document.querySelectorAll('.accordion');
+
+    accordions.forEach(accordion => {
+      accordion.addEventListener('click', function () {
+        // Переключаем активный класс на кнопку
+        this.classList.toggle('active');
+
+        // Получаем следующую панель
+        const panel = this.nextElementSibling;
+
+        // Переключаем класс .active на панели (для анимации)
+        if (panel.classList.contains('active')) {
+          panel.classList.remove('active');
+        } else {
+          panel.classList.add('active');
+        }
+      });
+    });
+  });
+</script>
+
+
 
 </body>
 </html>

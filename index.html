@@ -311,6 +311,105 @@
       color: var(--gray);
       font-size: 0.9rem;
     }
+	
+	/* --- Обновленные стили для аккордеонов --- */
+    .accordion {
+      background-color: #2F80ED;
+      color: #fff;
+      cursor: pointer;
+      padding: 15px 20px;
+      width: 100%;
+      text-align: left;
+      border: none;
+      outline: none;
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
+      margin-top: 10px;
+      border-radius: 6px;
+      position: relative;
+      padding-right: 40px; /* Место для стрелки */
+    }
+    
+    .accordion:hover {
+      background-color: #1a6fd8;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .accordion.active {
+      background-color: #1a6fd8;
+      border-radius: 6px 6px 0 0;
+    }
+    
+    /* Стрелка аккордеона */
+    .accordion::after {
+      content: '\f078'; /* Иконка стрелки вниз из Font Awesome */
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%) rotate(0deg);
+      transition: transform 0.3s ease;
+    }
+    
+    .accordion.active::after {
+      transform: translateY(-50%) rotate(180deg);
+    }
+    
+    /* Панель аккордеона */
+    .panel {
+      padding: 0 20px;
+      max-height: 0;
+      overflow: hidden;
+      background-color: white;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      border-left: 3px solid #ccc;
+      margin-bottom: 15px;
+    }
+    
+    .panel.active {
+      padding: 20px;
+      max-height: 2000px; /* Достаточно большое значение для плавного раскрытия */
+      border-radius: 0 0 6px 6px;
+    }
+    
+    /* Заголовки групп аккордеонов */
+    .accordion-header {
+      cursor: pointer;
+      padding: 15px 0;
+      font-size: 1.2rem;
+      color: var(--primary);
+      border-bottom: 1px solid #eee;
+      margin-bottom: 15px;
+      position: relative;
+      padding-right: 30px;
+      transition: color 0.3s ease;
+    }
+    
+    .accordion-header:hover {
+      color: #1a6fd8;
+    }
+    
+    .accordion-header::after {
+      content: '\f078';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%) rotate(0deg);
+      transition: transform 0.3s ease;
+      color: var(--primary);
+    }
+    
+    .accordion-header.expanded::after {
+      transform: translateY(-50%) rotate(180deg);
+    }
+    
+    .accordion-header.expanded {
+      color: var(--dark);
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -595,7 +694,7 @@ Acceptance Criteria:
 
   <!-- Единый JS-блок -->
   <script>
-    // --- Скрипт для анимации fade-in ---
+   // --- Скрипт для анимации fade-in ---
     const fadeElements = document.querySelectorAll('.fade-in');
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -607,12 +706,22 @@ Acceptance Criteria:
     fadeElements.forEach(el => observer.observe(el));
 
     // --- Скрипт для аккордеонов ---
-    const acc = document.querySelectorAll(".accordion");
-    acc.forEach(button => {
-      button.addEventListener("click", function() {
-        this.classList.toggle("active");
+    document.querySelectorAll('.accordion').forEach(button => {
+      button.addEventListener('click', function() {
+        this.classList.toggle('active');
         const panel = this.nextElementSibling;
-        panel.style.display = panel.style.display === "block" ? "none" : "block";
+        panel.classList.toggle('active');
+        
+        // Закрываем другие аккордеоны в той же группе
+        const parentBlock = this.closest('.case-block');
+        if (parentBlock) {
+          parentBlock.querySelectorAll('.accordion').forEach(otherButton => {
+            if (otherButton !== button) {
+              otherButton.classList.remove('active');
+              otherButton.nextElementSibling.classList.remove('active');
+            }
+          });
+        }
       });
     });
     
@@ -620,18 +729,26 @@ Acceptance Criteria:
     document.querySelectorAll('.accordion-header').forEach(header => {
       header.addEventListener('click', () => {
         const expanded = header.classList.contains('expanded');
-        // Скрываем все
+        const content = header.nextElementSibling;
+        
+        // Скрываем все другие группы
         document.querySelectorAll('.accordion-header').forEach(h => {
-          h.classList.remove('expanded');
+          if (h !== header) {
+            h.classList.remove('expanded');
+            h.nextElementSibling.style.display = 'none';
+          }
         });
-        document.querySelectorAll('.accordion-content').forEach(c => {
-          c.style.display = 'none';
-        });
-
-        // Если не был открыт - открываем
-        if (!expanded) {
-          header.classList.add('expanded');
-          header.nextElementSibling.style.display = 'block';
+        
+        // Переключаем текущую группу
+        header.classList.toggle('expanded', !expanded);
+        content.style.display = expanded ? 'none' : 'block';
+        
+        // Закрываем все аккордеоны внутри при закрытии группы
+        if (expanded) {
+          content.querySelectorAll('.accordion').forEach(acc => {
+            acc.classList.remove('active');
+            acc.nextElementSibling.classList.remove('active');
+          });
         }
       });
     });

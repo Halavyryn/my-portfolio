@@ -722,7 +722,7 @@ Acceptance Criteria:
   </footer>
 
   <!-- Единый JS-блок -->
-  <script>
+ <script>
   // --- Скрипт для анимации fade-in ---
   const fadeElements = document.querySelectorAll('.fade-in');
   const observer = new IntersectionObserver(entries => {
@@ -734,38 +734,36 @@ Acceptance Criteria:
   }, { threshold: 0.1 });
   fadeElements.forEach(el => observer.observe(el));
 
-  // --- Основной скрипт для аккордеонов ---
+  // --- Основной скрипт для вложенных аккордеонов ---
   document.querySelectorAll('.accordion').forEach(button => {
-    button.addEventListener('click', function(e) {
-      // Останавливаем всплытие события, чтобы оно не достигало родительских обработчиков
-      e.stopPropagation();
-      
+    button.addEventListener('click', function (e) {
+      e.stopPropagation(); // не даём всплывать до .accordion-header
       this.classList.toggle('active');
       const panel = this.nextElementSibling;
-      
-      // Переключаем видимость панели с анимацией
-      if (panel.style.display === 'block') {
-        panel.style.display = 'none';
-      } else {
-        panel.style.display = 'block';
-      }
+      panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
     });
   });
 
   // --- Скрипт для заголовков групп аккордеонов ---
   document.querySelectorAll('.accordion-header').forEach(header => {
-    header.addEventListener('click', function(e) {
-      // Останавливаем всплытие, если нужно
-      e.stopPropagation();
-      
-      const expanded = header.classList.contains('expanded');
-      const content = header.nextElementSibling;
-      
-      // Переключаем состояние только текущей группы
-      header.classList.toggle('expanded', !expanded);
-      content.style.display = expanded ? 'none' : 'block';
+    header.addEventListener('click', function (e) {
+      e.stopPropagation(); // чтобы не мешать вложенным аккордеонам
+
+      const isExpanded = header.classList.contains('expanded');
+      const currentContent = header.nextElementSibling;
+
+      // Закрываем все остальные .accordion-content в корневом уровне
+      document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('expanded'));
+      document.querySelectorAll('.case-block > .accordion-content').forEach(c => c.style.display = 'none');
+
+      // Если текущий не был раскрыт — раскрываем его
+      if (!isExpanded) {
+        header.classList.add('expanded');
+        currentContent.style.display = 'block';
+      }
     });
   });
 </script>
+
 </body>
 </html>
